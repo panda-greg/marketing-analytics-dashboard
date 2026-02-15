@@ -15,7 +15,7 @@ license: mit
 
 **Senior Marketing Analyst Technical Assignment - Improvado**
 
-🔗 **Live Dashboard:** `https://huggingface.co/spaces/panda-greg/marketing-analytics-improvado-tech-assignment`
+🔗 **Live Dashboard:** `https://marketing-analytics-improvado-production.up.railway.app`
 
 ---
 
