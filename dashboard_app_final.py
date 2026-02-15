@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from datetime import datetime
 import numpy as np
+import os
 
 # Page config
 st.set_page_config(
@@ -96,15 +97,28 @@ st.markdown("""
 @st.cache_resource
 def get_database_connection():
     """Create database connection"""
-    db_url = URL.create(
-        drivername=st.secrets["drivername"],
-        username=st.secrets["username"],
-        password=st.secrets["password"],
-        host=st.secrets["host"],
-        port=st.secrets["port"],
-        database=st.secrets["database"]
-    )
-    return create_engine(db_url)
+    db_url = os.getenv('DATABASE_URL')
+
+    if not db_url:
+        try:
+            db_url = URL.create(
+                drivername=st.secrets["drivername"],
+                username=st.secrets["username"],
+                password=st.secrets["password"],
+                host=st.secrets["host"],
+                port=st.secrets["port"],
+                database=st.secrets["database"]
+            )
+        except:
+            st.error("No database configuration found!")
+            st.info("Set DATABASE_URL environment variable or add database.connection_string to secrets")
+            return None
+    
+    try:
+        return create_engine(db_url)
+    except Exception as e:
+        st.error(f"Database connection error: {e}")
+        return None
 
 @st.cache_data(ttl=600)
 def load_data():
