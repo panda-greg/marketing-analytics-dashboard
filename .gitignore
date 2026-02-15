@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+archived/
+main.py
+
+# Streamlit secrets (IMPORTANT!)
+.streamlit/secrets.toml
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (if you have local CSVs)
+*.csv
+*.xlsx
+*.xls
+
+# Logs
+*.log
+
+#MDs
+DEPLOYMENT_GUIDE.md
+DEPLOYMENT_INSTRUCTIONS.md
+SUBMISSION_CHECKLIST.md
+SUBMISSION_PACKAGE.md
