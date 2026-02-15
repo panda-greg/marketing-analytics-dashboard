@@ -1,196 +1,129 @@
+---
+title: Marketing Analytics Dashboard - Improvado Assignment
+emoji: 📊
+colorFrom: blue
+colorTo: purple
+sdk: streamlit
+sdk_version: 1.31.0
+app_file: dashboard_app_final.py
+pinned: false
+license: mit
+---
+
+
 # Multi-Channel Advertising Performance Dashboard
 
 **Senior Marketing Analyst Technical Assignment - Improvado**
 
-Live Dashboard: `[YOUR_STREAMLIT_CLOUD_URL]`
+🔗 **Live Dashboard:** `https://huggingface.co/spaces/panda-greg/marketing-analytics-improvado-tech-assignment`
 
 ---
 
 ## 📊 Executive Summary
 
-This project demonstrates **senior-level marketing analytics** through a unified cross-channel advertising dashboard that transforms raw data from Facebook, Google, and TikTok into actionable business insights.
+Cross-channel advertising analytics dashboard unifying **Facebook, Google, and TikTok** data (330 records across 3 platforms) with AI-powered insights and strategic recommendations.
 
 ### Key Deliverables:
-✅ **Unified data model** consolidating 3 advertising platforms  
-✅ **AI-powered insights** with statistical rigor and business context  
-✅ **Interactive dashboard** with strategic recommendations  
-✅ **Production-quality SQL** with advanced analytics patterns  
+✅ Unified PostgreSQL data model  
+✅ AI-generated actionable insights with quantified impact  
+✅ Interactive Streamlit dashboard  
+✅ Advanced SQL with window functions, CTEs, statistical analysis  
 
 ---
 
-## 🎯 Approach & Methodology
+## 💡 Data-Driven Insights
 
-### 1. Data Integration Strategy
+### Finding #1: Platform CPA Efficiency
+**Facebook delivers 31% lower CPA** ($7.64 vs TikTok's $11.00)
 
-**Challenge:** Unify disparate platform data with different schemas and naming conventions.
+**Recommendation:** Shift $8,633/month from TikTok to Facebook  
+**Impact:** +110 conversions/month (8.2% increase)
 
-**Solution:**
-- Standardized column naming (e.g., `spend` → `cost`)
-- Calculated derived metrics (CPA, CTR, CPC) consistently across platforms
-- Implemented data quality checks (NULL handling, date validation)
+### Finding #2: Budget Allocation Gap
+**TikTok:** 57% budget → 50.5% conversions (-6.5% efficiency gap)  
+**Facebook:** 14% budget → 17.9% conversions (+3.9% efficiency gap)
 
-### 2. AI-Assisted Analysis Workflow
+**Action:** Reallocate based on performance, not historical spending
 
-Leveraged AI tools throughout the project to achieve **10x productivity**:
+### Finding #3: Top Campaign
+**"Influencer_Collab" (TikTok):** 2,653 conversions at $9.92 CPA
 
-**Data Exploration:**
-- Used Claude AI to generate 50+ SQL query variations
-- Automated detection of data quality issues
-- Time saved: ~3 hours → 20 minutes
-
-**Insight Generation:**
-- AI-assisted statistical pattern recognition
-- Automated performance benchmarking
-- Cross-validated findings against domain expertise
-
-**Code Optimization:**
-- AI-powered SQL query optimization (40% faster execution)
-- Dashboard performance tuning with caching
-- Automated testing of edge cases
-
-### 3. Cross-Channel Analytics Framework
-
-**Three-layer analytics approach:**
-
-**Layer 1:** Platform Performance Metrics  
-**Layer 2:** Temporal Patterns  
-**Layer 3:** Strategic Insights  
+**Recommendation:** Scale budget 25-50%
 
 ---
 
-## 💡 Key Insights & Recommendations
+## 🤖 AI Productivity Demonstration
 
-### Finding #1: Platform Efficiency Gap
-**Insight:** Facebook delivers 35% lower CPA ($2.40) vs Google ($3.70)
+**Traditional approach:** 24 hours  
+**AI-powered:** 6 hours (**4x faster**)
 
-**Recommendation:** Reallocate $15,000/month from Google to Facebook
-
-**Projected Impact:** 
-- +120 conversions/month
-- -$4,500 acquisition cost
-- 18% ROI improvement
-
-### Finding #2: Performance Consistency
-**Insight:** TikTok shows 45% CPA volatility vs Facebook's 12%
-
-**Recommendation:** Implement daily budget caps on TikTok ($500 max)
-
-**Risk Mitigation:** Prevents overspend during volatile periods
-
-### Finding #3: Conversion Rate Optimization
-**Insight:** Google has highest conversion rate (3.2%) despite higher CPA
-
-**Recommendation:** Shift awareness spend to Facebook, keep Google for intent
+- SQL query generation: **3 hours → 20 minutes**
+- Statistical analysis: **4 hours → 15 minutes**  
+- Dashboard development: **6 hours → 3 hours**
+- Insight generation: **3 hours → 45 minutes**
 
 ---
 
-## 🛠️ Technical Implementation
+## 🛠️ Technical Stack
 
-### Database: PostgreSQL (Supabase)
-- Industry-standard SQL compatibility
-- Unified `unified_ads` table
-- Performance indexes on key fields
+**Database:** PostgreSQL (Supabase)  
+**Backend:** Python 3.11+, SQLAlchemy  
+**Frontend:** Streamlit + Plotly  
+**AI Tools:** Claude AI for analytics acceleration
 
-### Dashboard: Streamlit
-**Note on Tool Choice:**  
-While the role requires Looker/Tableau expertise, I chose Streamlit to demonstrate:
-- **SQL proficiency** (all data logic in SQL, not Python)
-- **BI principles** transferable to any platform
-- **Rapid prototyping** with production-quality code
-
-I have 3+ years Tableau/Power BI experience (see resume).
-
-### Code Quality
-- Modular function architecture
-- Database query caching
-- Comprehensive error handling
-- Inline documentation
+### Why Streamlit vs Looker/Tableau?
+- Demonstrates SQL expertise (all logic in database)
+- Enables AI integration
+- Faster delivery for assignment
+- Transferable BI principles
 
 ---
 
 ## 🔍 Advanced SQL Examples
 
-### Campaign Performance Benchmarking
+### Platform Efficiency with Window Functions
 ```sql
-WITH campaign_metrics AS (
-    SELECT 
-        campaign_name,
-        platform,
-        SUM(cost) / NULLIF(SUM(conversions), 0) as cpa
-    FROM unified_ads
-    GROUP BY 1, 2
-),
-platform_benchmarks AS (
-    SELECT 
-        platform,
-        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY cpa) as median_cpa
-    FROM campaign_metrics
-    GROUP BY platform
+WITH platform_metrics AS (
+    SELECT platform, SUM(cost) as spend, SUM(conversions) as conv
+    FROM unified_ads_core GROUP BY platform
 )
 SELECT 
-    cm.campaign_name,
-    cm.cpa,
-    cb.median_cpa,
-    ((cm.cpa - cb.median_cpa) / cb.median_cpa * 100) as variance_pct,
-    CASE 
-        WHEN cm.cpa <= cb.median_cpa THEN 'Above Average'
-        ELSE 'Below Average'
-    END as performance_tier
-FROM campaign_metrics cm
-JOIN platform_benchmarks cb USING (platform);
+    platform,
+    ROUND((conv::numeric / spend * 1000)::numeric, 2) as efficiency_score,
+    RANK() OVER (ORDER BY conv::numeric / spend DESC) as rank
+FROM platform_metrics;
 ```
 
-See `advanced_sql_queries.sql` for 8+ additional patterns.
+### Budget Optimization with CTEs
+```sql
+WITH totals AS (
+    SELECT SUM(cost) as total_spend, SUM(conversions) as total_conv
+    FROM unified_ads_core
+)
+SELECT 
+    platform,
+    ROUND((SUM(cost) / (SELECT total_spend FROM totals) * 100)::numeric, 1) as budget_share,
+    ROUND((SUM(conversions) / (SELECT total_conv FROM totals) * 100)::numeric, 1) as conv_share,
+    ROUND((conv_share - budget_share)::numeric, 1) as efficiency_gap
+FROM unified_ads_core
+GROUP BY platform;
+```
+
+*Full SQL script with 5 analytical queries: `marketing_analytics_sql.sql`*
 
 ---
 
-## 🚀 Dashboard Features
+## 📊 Dashboard Features
 
-### Core Visualizations
-1. **AI-Generated Executive Summary**
-2. **Platform Efficiency Matrix** (CPA vs Conv Rate)
-3. **Strategic Recommendations** with projected impact
-4. **Budget Distribution Analysis**
-5. **Daily Performance Trends**
-6. **Top Campaign Rankings**
-
-### Interactive Controls
-- Date range filtering
-- Platform selection
-- Metric switching
+- **AI Executive Summary:** One-line cross-platform insight
+- **Budget Recommendations:** Data-driven reallocation with expected impact  
+- **Efficiency Matrix:** CPA vs Conversion Rate scatter plot
+- **Top Campaigns:** Actionable scale/pause recommendations
+- **Trend Analysis:** Daily performance with platform comparison
 
 ---
 
-## 📈 Business Impact Potential
-
-**Monthly:**
-- $4,500 cost reduction
-- +120 conversions
-- 18% efficiency improvement
-
-**Annual:**
-- $54,000 saved
-- 1,440 additional conversions
-- 15-20% ROAS improvement
-
----
-
-## 🎓 Skills Demonstrated
-
-### Required Skills:
-✅ Expert-level BI dashboard design  
-✅ Advanced SQL (CTEs, window functions)  
-✅ Client-ready communication  
-✅ End-to-end ownership  
-✅ AI-powered productivity  
-
-### Nice-to-Have:
-✅ Marketing platform expertise  
-✅ Statistical rigor  
-
----
-
-## 🔧 Running Locally
+## 🚀 Quick Start
 
 ```bash
 # Install
@@ -198,42 +131,31 @@ pip install -r requirements.txt
 
 # Configure database
 cp .streamlit/secrets.toml.template .streamlit/secrets.toml
-# Edit with your credentials
+# Add your Supabase credentials
 
 # Run
-streamlit run dashboard_final.py
+streamlit run dashboard_app_final.py
 ```
 
 ---
 
-## 🎯 Design Decisions
+## 📁 Files
 
-**Why Streamlit?**
-- Speed: Hours vs days for Looker/Tableau
-- Customization: Full control for AI integration
-- Demonstration: Shows SQL expertise clearly
-- Transferable: Same principles apply to all BI tools
-
-**Why AI Integration?**
-- Aligns with Improvado's focus
-- Modern workflow automation
-- Productivity multiplier
-
-**Why Insights-First?**
-- Every chart answers business questions
-- Actionable recommendations prioritized
-- No decorative visualizations
-
----
-
-## 📁 Project Files
-
-- `dashboard_final.py` - Streamlit application
-- `advanced_sql_queries.sql` - Complete SQL script  
+- `dashboard_app_final.py` - Main application
+- `marketing_analytics_sql.sql` - Complete SQL script
 - `requirements.txt` - Dependencies
-- `README.md` - This file
+- `README.md` - Documentation
 
 ---
 
-*Built for Improvado Technical Assignment*  
-*Leveraging AI for 10x analyst productivity*
+## 🎯 Demonstrates
+
+✅ Advanced SQL (window functions, CTEs, LAG, NTILE)  
+✅ BI principles (transferable to Looker/Tableau/Power BI)  
+✅ AI productivity (4x time savings)  
+✅ Business impact focus (quantified recommendations)  
+✅ Client-ready delivery (clear, actionable insights)
+
+---
+
+*Built for Improvado Technical Assignment | AI-Powered Analytics*
